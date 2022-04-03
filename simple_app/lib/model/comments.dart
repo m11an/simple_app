@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -5,19 +6,25 @@ part 'comments.g.dart';
 
 @HiveType(typeId: 0)
 @JsonSerializable()
-class Comments {
+class Comments extends Equatable {
   @HiveField(0)
-  int id;
+  final int id;
   @HiveField(1)
-  int? postId;
+  final int? postId;
   @HiveField(2)
-  String? name;
+  final String? name;
   @HiveField(3)
-  String? email;
+  final String? email;
   @HiveField(4)
-  String? body;
+  final String? body;
 
-  Comments({this.postId, required this.id, this.name, this.email, this.body});
+  const Comments({
+    this.postId,
+    required this.id,
+    this.name,
+    this.email,
+    this.body,
+  });
 
   factory Comments.fromJson(Map<String, dynamic> json) =>
       _$CommentsFromJson(json);
@@ -25,4 +32,7 @@ class Comments {
   Map<String, dynamic> toJson() => _$CommentsToJson(this);
 
   static const fromJsonFactory = _$CommentsFromJson;
+
+  @override
+  List<Object?> get props => [id, postId, name, email, body];
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'components/card_view.dart';
 import '../../components/circular_loading.dart';
 
@@ -11,8 +10,12 @@ class CommentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var refreshkey = GlobalKey<RefreshIndicatorState>();
+
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Simple app'),
+      ),
       body: BlocProvider(
         create: (ctx) => CommentsBloc(),
         child: BlocBuilder<CommentsBloc, CommentsState>(
@@ -21,19 +24,30 @@ class CommentsScreen extends StatelessWidget {
               BlocProvider.of<CommentsBloc>(blocCtx).add(GetComments());
               return const CircularLoading();
             } else if (state is CommentsLoaded) {
-              return state.listOfComments != null &&
-                      state.listOfComments!.isNotEmpty
-                  ? ListView.builder(
-                      itemBuilder: (context, index) {
-                        return CardView(
-                          comment: state.listOfComments![index],
-                        );
-                      },
-                      itemCount: state.listOfComments!.length,
-                    )
-                  : const Center(
-                      child: Text('No comments'),
-                    );
+              return RefreshIndicator(
+                onRefresh: () async {
+                  refreshkey.currentState?.show(atTop: true);
+                  BlocProvider.of<CommentsBloc>(blocCtx).add(GetComments());
+                },
+                child: state.listOfComments.isNotEmpty
+                    ? ListView.builder(
+                        itemBuilder: (context, index) {
+                          return CardView(
+                            comment: state.listOfComments[index],
+                          );
+                        },
+                        itemCount: state.listOfComments.length,
+                      )
+                    : ListView(
+                        children: const [
+                          Center(
+                            child: Text('No comments'),
+                          ),
+                        ],
+                      ),
+              );
+            } else if (state is LoadingComments) {
+              return const CircularLoading();
             }
             return Container();
           },
